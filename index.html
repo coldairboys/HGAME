@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#3D4852">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>西游沙悟净传</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Serif SC', serif;
+            background: #3D4852;
+        }
+        #app {
+            width: 100%;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #3D4852 0%, #2A343C 100%);
+            position: relative;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        /* 开始界面 */
+        .menu { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); }
+        .menu h1 { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(42px, 12vw); color: #F5F0E6; text-shadow: 2px 2px 8px rgba(0,0,0,0.3); margin-bottom: 10px; animation: fadeDown 1.5s ease; }
+        .menu h2 { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(18px, 5vw); color: #5A6B7C; margin-bottom: 50px; animation: fadeIn 1.5s ease 0.5s backwards; }
+        .menu .line { width: 180px; height: 2px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); margin-bottom: 40px; animation: fadeIn 1.5s ease 0.3s backwards; }
+        .menu button { padding: 20px 60px; background: linear-gradient(135deg, #4A6FA5 0%, #3D5A80 100%); border: 3px solid #D4AF37; border-radius: 12px; color: #D4AF37; font-family: 'ZCOOL XiaoWei', cursive; font-size: min(26px, 7vw); cursor: pointer; animation: pulse 2s ease infinite, fadeIn 1.5s ease 1s backwards; min-width: 200px; min-height: 60px; }
+        .menu button:active { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: #3D4852; }
+        .menu p { margin-top: 40px; color: #5A6B7C; font-size: 12px; animation: fadeIn 1.5s ease 1.5s backwards; }
+        /* 场景背景 */
+        .scene { position: absolute; top: 0; left: 0; width: 100%; height: 50%; filter: brightness(0.5); }
+        .s-modern { background: linear-gradient(180deg, #4A5568 0%, #2D3748 100%); }
+        .s-river { background: linear-gradient(180deg, #1a3a4a 0%, #0d1f29 100%); }
+        .s-forest { background: linear-gradient(180deg, #2D4A3F 0%, #1a2f28 100%); }
+        .s-cabin { background: linear-gradient(180deg, #5D4E37 0%, #3D2914 100%); }
+        .s-crossing { background: linear-gradient(180deg, #4A6FA5 0%, #2C3E50 100%); }
+        .s-ending { background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%); }
+        .ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 20%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Cpath fill='%232A343C' d='M0,30 Q15,15 30,22 T60,18 T90,25 L100,30 Z'/%3E%3C/svg%3E") no-repeat bottom; background-size: 100% 100%; }
+        /* 章节标题 */
+        .title { position: absolute; top: calc(8% + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); font-family: 'ZCOOL XiaoWei', cursive; font-size: min(22px, 6vw); color: #D4AF37; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); animation: fadeDown 1s ease forwards; z-index: 10; white-space: nowrap; }
+        /* 角色显示 */
+        .chars { position: absolute; bottom: 32%; left: 50%; transform: translateX(-50%); display: flex; gap: 30px; }
+        .char { display: flex; flex-direction: column; align-items: center; }
+        .sprite { width: 70px; height: 100px; display: flex; justify-content: center; align-items: flex-end; animation: float 3s ease-in-out infinite; }
+        .sp-wj { width: 55px; height: 90px; background: linear-gradient(180deg, #5A6B7C 0%, #3D4852 100%); border-radius: 8px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .sp-wj::before { content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 28px; height: 14px; background: #2A343C; border-radius: 4px 4px 0 0; }
+        .sp-wj::after { content: '悟'; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); font-family: 'ZCOOL XiaoWei', cursive; font-size: 14px; color: #D4AF37; }
+        .sp-qy { width: 50px; height: 85px; background: linear-gradient(180deg, #9B59B6 0%, #6C3483 100%); border-radius: 8px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .sp-qy::after { content: '清'; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); font-family: 'ZCOOL XiaoWei', cursive; font-size: 13px; color: #F5F0E6; }
+        .bar-hp { width: 65px; height: 9px; background: #1a1a2e; border: 2px solid #8B4513; border-radius: 5px; margin-top: 5px; overflow: hidden; }
+        .bar-hp div { height: 100%; background: linear-gradient(90deg, #8B0000 0%, #FF4500 100%); transition: width 0.3s ease; }
+        .bar-mp { width: 50px; height: 5px; background: #1a1a2e; border: 1px solid #4A6FA5; border-radius: 3px; margin-top: 3px; overflow: hidden; }
+        .bar-mp div { height: 100%; background: linear-gradient(90deg, #4A6FA5 0%, #6B8FC7 100%); transition: width 0.3s ease; }
+        .cname { font-family: 'ZCOOL XiaoWei', cursive; font-size: 12px; color: #F5F0E6; margin-top: 4px; }
+        /* 对话框 */
+        .dialog { position: absolute; bottom: 0; left: 0; width: 100%; min-height: 32%; background: linear-gradient(180deg, rgba(61,72,82,0.98) 0%, rgba(42,52,60,0.99) 100%); border-top: 3px solid #D4AF37; padding: 12px; animation: slideUp 0.5s ease; }
+        .speaker { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(17px, 5vw); color: #D4AF37; margin-bottom: 6px; }
+        .dtext { font-size: min(14px, 4vw); line-height: 1.7; color: #F5F0E6; min-height: 50px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #4A6FA5; white-space: pre-line; word-wrap: break-word; }
+        .choices { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .cbtn { padding: 14px 18px; background: linear-gradient(135deg, #4A6FA5 0%, #3D5A80 100%); border: 2px solid #D4AF37; border-radius: 8px; color: #F5F0E6; font-family: 'Noto Serif SC', serif; font-size: min(14px, 4vw); cursor: pointer; text-align: left; min-height: 50px; display: flex; align-items: center; }
+        .cbtn:active { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: #3D4852; transform: translateX(6px); }
+        .cbtn-cont { padding: 14px 30px; background: linear-gradient(135deg, #8B4513 0%, #5D3A1A 100%); border: 2px solid #D4AF37; border-radius: 8px; color: #F5F0E6; font-family: 'Noto Serif SC', serif; font-size: min(14px, 4vw); cursor: pointer; margin-top: 10px; min-height: 50px; }
+        .cbtn-cont:active { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: #3D4852; }
+        /* 道具栏 */
+        .inv { position: absolute; top: calc(10px + env(safe-area-inset-top)); left: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; border: 1px solid #8B4513; z-index: 20; font-size: 11px; color: #F5F0E6; }
+        .inv-item { display: flex; align-items: center; margin: 2px 0; }
+        .inv-icon { width: 14px; height: 14px; margin-right: 4px; background: #228B22; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        /* 好感度 */
+        .stats { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px; background: rgba(0,0,0,0.7); padding: 6px 10px; border-radius: 6px; border: 1px solid #D4AF37; z-index: 20; font-size: 11px; color: #F5F0E6; }
+        /* 战斗界面 */
+        .battle { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; background: linear-gradient(180deg, #1a1a2e 0%, #2A343C 100%); }
+        .bhead { padding: 8px 15px; padding-top: calc(8px + env(safe-area-inset-top)); background: rgba(0,0,0,0.6); border-bottom: 2px solid #D4AF37; text-align: center; }
+        .bhead div { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(15px, 4vw); color: #D4AF37; }
+        .barena { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; }
+        .benemy { margin-bottom: 15px; }
+        .bsp { width: 75px; height: 105px; display: flex; justify-content: center; align-items: flex-end; }
+        .sp-enemy { width: 65px; height: 90px; background: linear-gradient(180deg, #8B4513 0%, #3D1F0D 100%); border-radius: 8px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .sp-enemy::after { content: attr(data-name); position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-family: 'ZCOOL XiaoWei', cursive; font-size: 12px; color: #8B0000; white-space: nowrap; }
+        .sp-boss { width: 75px; height: 100px; background: linear-gradient(180deg, #2C0000 0%, #1a0000 100%); border-radius: 10px; box-shadow: 0 5px 20px rgba(139,0,0,0.5); }
+        .bvs { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(20px, 6vw); color: #D4AF37; margin: 8px 0; }
+        .bplayers { display: flex; gap: 25px; }
+        .bplayer { display: flex; flex-direction: column; align-items: center; }
+        .bpl-name { font-family: 'ZCOOL XiaoWei', cursive; font-size: 12px; color: #F5F0E6; margin-top: 4px; }
+        .blog { padding: 8px 12px; background: rgba(0,0,0,0.6); max-height: 60px; overflow-y: auto; font-size: min(11px, 3.5vw); color: #F5F0E6; border-top: 1px solid #4A6FA5; }
+        .blog div { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .blog .dmg { color: #8B0000; }
+        .blog .heal { color: #228B22; }
+        .blog .spec { color: #D4AF37; }
+        .bacts { padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.85); border-top: 2px solid #D4AF37; }
+        .tabs { display: flex; border-bottom: 1px solid #4A6FA5; margin-bottom: 10px; }
+        .tab { flex: 1; padding: 10px; background: transparent; border: none; color: #F5F0E6; font-family: 'Noto Serif SC', serif; font-size: min(12px, 3.5vw); opacity: 0.6; cursor: pointer; min-height: 50px; }
+        .tab.active { opacity: 1; color: #D4AF37; border-bottom: 2px solid #D4AF37; }
+        .tabcnt { display: none; }
+        .tabcnt.active { display: block; }
+        .agrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .abtn { padding: 14px 10px; border-radius: 8px; color: #F5F0E6; font-family: 'Noto Serif SC', serif; font-size: min(12px, 3.5vw); cursor: pointer; min-height: 55px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid; }
+        .abtn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .abtn:active:not(:disabled) { transform: translateY(-2px); }
+        .abtn-att { background: linear-gradient(135deg, #8B0000 0%, #5C0000 100%); border-color: #8B0000; }
+        .abtn-skl { background: linear-gradient(135deg, #4A6FA5 0%, #2D4A6F 100%); border-color: #4A6FA5; }
+        .abtn-def { background: linear-gradient(135deg, #4A7C59 0%, #2D5A3F 100%); border-color: #228B22; }
+        .abtn-itm { background: linear-gradient(135deg, #8B6914 0%, #5D4A0F 100%); border-color: #D4AF37; }
+        .abtn:active:not(:disabled) { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: #3D4852; }
+        .scost { font-size: min(10px, 3vw); color: #D4AF37; margin-top: 2px; }
+        /* 战斗结果 */
+        .result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 50; }
+        .result h2 { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(34px, 10vw); color: #D4AF37; margin-bottom: 25px; }
+        .result h2.fail { color: #8B0000; }
+        .result button { padding: 14px 35px; background: linear-gradient(135deg, #8B4513 0%, #5D3A1A 100%); border: 2px solid #D4AF37; border-radius: 8px; color: #F5F0E6; font-family: 'Noto Serif SC', serif; font-size: min(14px, 4vw); cursor: pointer; min-height: 50px; }
+        /* 结局 */
+        .ending { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding: 25px; text-align: center; }
+        .ending h2 { font-family: 'ZCOOL XiaoWei', cursive; font-size: min(28px, 8vw); color: #D4AF37; margin-bottom: 15px; animation: fadeIn 1s ease; }
+        .ending .line { width: 120px; height: 2px; background: linear-gradient(90deg, transparent, #D4AF37, transparent); margin: 15px 0; animation: fadeIn 1s ease 0.3s backwards; }
+        .ending p { font-size: min(13px, 4vw); line-height: 1.9; color: #F5F0E6; max-width: 300px; animation: fadeIn 1s ease 0.5s backwards; white-space: pre-line; }
+        .ending button { margin-top: 25px; padding: 14px 40px; background: linear-gradient(135deg, #4A6FA5 0%, #3D5A80 100%); border: 2px solid #D4AF37; border-radius: 10px; color: #D4AF37; font-family: 'ZCOOL XiaoWei', cursive; font-size: min(18px, 5vw); cursor: pointer; animation: fadeIn 1s ease 1s backwards; min-height: 55px; }
+        .ending button:active { background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: #3D4852; }
+        /* 伤害数字 */
+        .dmgnum { position: absolute; font-family: 'ZCOOL XiaoWei', cursive; font-size: min(24px, 7vw); color: #8B0000; text-shadow: 2px 2px 2px rgba(0,0,0,0.3); animation: dmgFloat 1s ease forwards; pointer-events: none; z-index: 100; }
+        .dmgnum.heal { color: #228B22; }
+        @keyframes dmgFloat { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.3); } }
+        /* 技能特效 */
+        .skilleff { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-family: 'ZCOOL XiaoWei', cursive; font-size: min(26px, 7vw); color: #D4AF37; text-shadow: 0 0 20px #D4AF37; animation: skBurst 0.8s ease forwards; pointer-events: none; z-index: 100; }
+        @keyframes skBurst { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+        /* 动画 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-25px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        /* 说明面板 */
+        .infopanel { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 3px solid #D4AF37; border-radius: 10px; padding: 18px; max-width: 320px; z-index: 150; display: none; margin: 20px; }
+        .infopanel h3 { font-family: 'ZCOOL XiaoWei', cursive; color: #D4AF37; font-size: min(20px, 6vw); margin-bottom: 12px; text-align: center; }
+        .infopanel p { color: #F5F0E6; font-size: min(12px, 4vw); line-height: 1.7; margin-bottom: 8px; word-wrap: break-word; }
+        .infopanel button { margin-top: 12px; padding: 12px 30px; background: #4A6FA5; border: 2px solid #D4AF37; border-radius: 6px; color: #D4AF37; font-family: 'Noto Serif SC', serif; cursor: pointer; display: block; margin-left: auto; margin-right: auto; min-height: 50px; }
+        .infopanel button:active { background: #D4AF37; color: #3D4852; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 开始界面 -->
+        <div class="menu" id="menu">
+            <h1>西游沙悟净传</h1>
+            <h2>现代打工人的洪荒之旅</h2>
+            <div class="line"></div>
+            <button onclick="start()">开始游戏</button>
+            <p>竖屏全屏 · 点击操作 · 回合制对战<br>手机浏览器直接游玩</p>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="game" style="display:none;">
+            <div class="scene s-modern" id="scene"></div>
+            <div class="ground"></div>
+            <div class="title" id="title"></div>
+
+            <div class="inv">
+                <div class="inv-item"><span class="inv-icon">💊</span>丹药: <span id="dan">5</span></div>
+                <div class="inv-item"><span class="inv-icon">🧪</span>凝神: <span id="ning">3</span></div>
+            </div>
+
+            <div class="stats">
+                <div class="inv-item"><span class="inv-icon">💕</span>好感: <span id="love">50</span></div>
+            </div>
+
+            <div class="chars" id="chars" style="display:none;">
+                <div class="char">
+                    <div class="sprite"><div class="sp-wj"></div></div>
+                    <div class="bar-hp"><div id="wjhp" style="width:100%"></div></div>
+                    <div class="bar-mp"><div id="wjmp" style="width:100%"></div></div>
+                    <div class="cname">沙悟净</div>
+                </div>
+                <div class="char" id="qycard" style="display:none;">
+                    <div class="sprite"><div class="sp-qy"></div></div>
+                    <div class="bar-hp"><div id="qyhp" style="width:100%"></div></div>
+                    <div class="bar-mp"><div id="qymp" style="width:100%"></div></div>
+                    <div class="cname">苏清瑶</div>
+                </div>
+            </div>
+
+            <div class="dialog" id="dialog">
+                <div class="speaker" id="speaker">旁白</div>
+                <div class="dtext" id="dtext"></div>
+                <div class="choices" id="choices"></div>
+            </div>
+
+            <!-- 战斗界面 -->
+            <div class="battle" id="battle">
+                <div class="bhead"><div id="bturn">第 1 回合</div></div>
+                <div class="barena">
+                    <div class="benemy">
+                        <div class="bsp" id="esp"><div class="sp-enemy" data-name="敌人"></div></div>
+                        <div class="bar-hp" style="width:75px;margin:5px auto 0;"><div id="ehp" style="width:100%"></div></div>
+                        <div class="cname" id="ename">敌人</div>
+                    </div>
+                    <div class="bvs">VS</div>
+                    <div class="bplayers">
+                        <div class="bplayer">
+                            <div class="sprite"><div class="sp-wj"></div></div>
+                            <div class="bar-hp" style="width:65px;margin-top:5px;"><div id="bhp" style="width:100%"></div></div>
+                            <div class="bpl-name">沙悟净</div>
+                        </div>
+                        <div class="bplayer" id="bqcard" style="display:none;">
+                            <div class="sprite"><div class="sp-qy"></div></div>
+                            <div class="bar-hp" style="width:65px;margin-top:5px;"><div id="bqhp" style="width:100%"></div></div>
+                            <div class="bpl-name">苏清瑶</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="blog" id="blog"></div>
+                <div class="bacts">
+                    <div class="tabs">
+                        <button class="tab active" onclick="stab('attack')">攻击</button>
+                        <button class="tab" onclick="stab('skill')">技能</button>
+                        <button class="tab" onclick="stab('defend')">防御</button>
+                        <button class="tab" onclick="stab('item')">道具</button>
+                    </div>
+                    <div class="tabcnt active" id="attack-cnt"><div class="agrid"><button class="abtn abtn-att" onclick="attack()">棍法普攻</button></div></div>
+                    <div class="tabcnt" id="skill-cnt"><div class="agrid" id="skgrid"></div></div>
+                    <div class="tabcnt" id="defend-cnt"><div class="agrid"><button class="abtn abtn-def" onclick="defend()">防御</button></div></div>
+                    <div class="tabcnt" id="item-cnt"><div class="agrid" id="itgrid"></div></div>
+                </div>
+            </div>
+
+            <div class="result" id="result">
+                <h2 id="rtext">胜利!</h2>
+                <button onclick="contBattle()">继续</button>
+            </div>
+
+            <div class="ending" id="ending">
+                <h2 id="etitle">西行启程</h2>
+                <div class="line"></div>
+                <p id="etext"></p>
+                <div class="line"></div>
+                <button onclick="replay()">再玩一次</button>
+            </div>
+
+            <div class="infopanel" id="infopanel">
+                <h3>游戏说明</h3>
+                <p><strong>背景：</strong>现代打工人加班猝死，灵魂穿越到西游洪荒时代，附身还未被贬流沙河的沙悟净身上。</p>
+                <p><strong>操作：</strong>点击选项推进剧情。战斗中可选择：攻击、技能、防御或使用道具。</p>
+                <p><strong>角色：</strong>沙悟净（肉盾辅助）、苏清瑶（输出+治疗）</p>
+                <button onclick="closeInfo()">知道了</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ============ 游戏数据 ============
+const G = {
+    ch: 0, ph: 'menu', love: 50, dan: 5, ning: 3,
+    hp: 120, maxHp: 120, mp: 30, maxMp: 30,
+    qyHp: 90, qyMaxHp: 90, qyMp: 25, qyMaxMp: 25,
+    qyJoin: false, enemy: null, turn: 1,
+    di: 0, def: false, qyDef: false, win: false, chs: false
+};
+
+// 章节数据
+const CHAPS = [
+    { // 0 第一章
+        title: '第一章·穿越觉醒', scene: 'modern',
+        ds: [
+            {sp:'旁白', tx:'公元2026年，某互联网公司。'},
+            {sp:'旁白', tx:'又一个加班到凌晨的夜晚，你盯着电脑屏幕，眼皮越来越沉……'},
+            {sp:'主角', tx:'（内心）这TM第几个996了？感觉身体被掏空……'},
+            {sp:'旁白', tx:'突然，一阵眩晕袭来，眼前一黑……'},
+            {sp:'旁白', tx:'再次睁开眼睛，你发现自己躺在一片河滩上。'},
+            {sp:'主角', tx:'（惊醒）卧槽！这是哪？我不是在公司加班吗？'},
+            {sp:'主角', tx:'（摸了摸脸）等等……这手感不对啊！怎么这么粗糙？'},
+            {sp:'旁白', tx:'你看向水中倒影——一个虬髯大汉，豹头环眼，手持降妖宝杖！'},
+            {sp:'主角', tx:'（惊恐）我……我变成沙悟净了？！这不是真的！'},
+            {sp:'旁白', tx:'就在这时，一群河妖从水中冒出。'},
+            {sp:'河妖', tx:'哪来的野和尚？竟敢擅闯流沙河！'}
+        ],
+        battle: '河妖',
+        after: [
+            {sp:'旁白', tx:'你挥舞降妖宝杖，击退了河妖。'},
+            {sp:'主角', tx:'（喘息）……原来这是真的。我穿越了，变成了沙悟净。'},
+            {sp:'主角', tx:'（苦笑）996的福报还没享完，就要在这荒山野岭打怪升级了？'},
+            {sp:'旁白', tx:'就在你茫然四顾时，远处传来女子的呼救声……'},
+            {next:1}
+        ]
+    },
+    { // 1 第二章
+        title: '第二章·偶遇侠女', scene: 'forest',
+        ds: [
+            {sp:'旁白', tx:'你循声望去，只见一位青衣女子被几个山贼围困。'},
+            {sp:'山贼', tx:'小娘子，跟我们走一趟吧！'},
+            {sp:'苏清瑶', tx:'（手持长剑）你们这些恶徒！光天化日竟敢强抢民女！'},
+            {sp:'主角', tx:'（内心）卧槽，古装美女！不行，我可是现代好青年，不能见死不救！'},
+            {sp:'主角', tx:'（大喝）住手！光天化日之下，竟敢欺凌弱小！'},
+            {sp:'山贼', tx:'哪来的秃驴？敢管爷爷的闲事！兄弟们，一起上！'}
+        ],
+        battle: '山贼',
+        after: [
+            {sp:'旁白', tx:'你和女子联手击退了山贼。'},
+            {sp:'苏清瑶', tx:'（收剑行礼）多谢壮士出手相救！小女子苏清瑶，在此谢过。'},
+            {sp:'主角', tx:'（挠头）呃……女侠客气了，路见不平拔刀相助，应该的。'},
+            {sp:'苏清瑶', tx:'壮士武艺高强，不知尊姓大名？'},
+            {sp:'主角', tx:'（内心）我总不能说我是穿越过来的吧……'},
+            {sp:'主角', tx:'在下……沙悟净。'},
+            {sp:'苏清瑶', tx:'沙悟净？倒是个奇特的名字。看壮士仪表不凡，却为何孤身一人？'},
+            {sp:'主角', tx:'（叹气）说来话长……我也不知道怎么就到这里了。'},
+            {sp:'主角', tx:'', choices:[
+                {txt:'向她坦诚穿越的秘密', nxt:'trust', eff:{love:15}},
+                {txt:'含糊其辞，隐瞒真相', nxt:'hide', eff:{love:-5}}
+            ]}
+        ],
+        trust: [
+            {sp:'主角', tx:'其实……我不是这个世界的人。我来自一千多年后的未来。'},
+            {sp:'苏清瑶', tx:'（惊讶）未来？这……这怎么可能？'},
+            {sp:'主角', tx:'我也不知道怎么回事，加班加着加着就穿越过来了。'},
+            {sp:'苏清瑶', tx:'（沉思片刻）……虽然难以置信，但观壮士言行，确实与常人不同。'},
+            {sp:'苏清瑶', tx:'既然如此，小女子愿信你一次。不如结伴同行？也好有个照应。'},
+            {sp:'主角', tx:'（惊喜）真的吗？太好了！有人作伴总比孤身一人强！', eff:{qyJoin:true}, next:2}
+        ],
+        hide: [
+            {sp:'主角', tx:'一言难尽……在下四处游历，四海为家。'},
+            {sp:'苏清瑶', tx:'（微微皱眉）壮士似乎有难言之隐。'},
+            {sp:'苏清瑶', tx:'罢了，每个人都有自己的秘密。小女子正要前往西牛贺洲，不知壮士是否同行？'},
+            {sp:'主角', tx:'（犹豫片刻）好，那就结伴而行吧。', eff:{qyJoin:true}, next:2}
+        ]
+    },
+    { // 2 第三章
+        title: '第三章·结伴同行', scene: 'cabin',
+        ds: [
+            {sp:'旁白', tx:'你与苏清瑶结伴同行，来到一处林间小屋借宿。'},
+            {sp:'苏清瑶', tx:'（烧水）沙大哥，一路辛苦，喝杯热茶吧。'},
+            {sp:'主角', tx:'（接过茶杯）谢谢清瑶姑娘。你怎么会一个人在外闯荡？'},
+            {sp:'苏清瑶', tx:'（叹气）我本是将门之女，家父遭奸臣陷害……'},
+            {sp:'苏清瑶', tx:'我隐姓埋名，四处寻访名师，只为有朝一日能为家父平反。'},
+            {sp:'主角', tx:'（感慨）原来如此……同是天涯沦落人啊。'},
+            {sp:'苏清瑶', tx:'沙大哥呢？你说你来自未来，那未来是什么样子的？'},
+            {sp:'主角', tx:'未来啊……有高楼大厦，有汽车飞机，人们不用骑马就能日行千里。'},
+            {sp:'苏清瑶', tx:'（向往）听起来真是神奇……不过，也会有像我这样身世可怜的人吗？'},
+            {sp:'主角', tx:'（沉默）……会的。每个时代都有自己的苦难。'},
+            {sp:'主角', tx:'', choices:[
+                {txt:'握住她的手安慰', nxt:'comfort', eff:{love:20}},
+                {txt:'默默点头，表示理解', nxt:'silent', eff:{love:5}}
+            ]}
+        ],
+        comfort: [
+            {sp:'主角', tx:'（握住她的手）但是，只要心怀希望，总有一天会好起来的。'},
+            {sp:'苏清瑶', tx:'（脸颊微红）沙大哥……'},
+            {sp:'旁白', tx:'四目相对，空气中弥漫着微妙的情愫。'},
+            {sp:'主角', tx:'（赶紧松开手）呃……外面好像有动静！'},
+            {sp:'旁白', tx:'果然，一群妖兽从林中冲出！', next:3}
+        ],
+        silent: [
+            {sp:'苏清瑶', tx:'（轻轻叹气）是啊……希望如此。'},
+            {sp:'旁白', tx:'就在这时，外面传来阵阵兽吼。'},
+            {sp:'主角', tx:'不好！有危险！', next:3}
+        ],
+        battle: '妖兽'
+    },
+    { // 3 第四章
+        title: '第四章·情生缘起', scene: 'crossing',
+        ds: [
+            {sp:'旁白', tx:'你们一路来到流沙河畔。'},
+            {sp:'苏清瑶', tx:'（望着河水）这条河好宽……我们怎么过去？'},
+            {sp:'主角', tx:'（沉思）让我想想……我记得沙悟净好像能在流沙河里行走？'},
+            {sp:'主角', tx:'（尝试踏入河中）嘿！真的能站在水面上！'},
+            {sp:'苏清瑶', tx:'（惊叹）沙大哥，你好厉害！'},
+            {sp:'主角', tx:'来，我背你过去！'},
+            {sp:'苏清瑶', tx:'（脸红）这……这不太好吧……'},
+            {sp:'主角', tx:'没事，快点，天色不早了！'},
+            {sp:'旁白', tx:'你背着苏清瑶渡过了流沙河。她的发丝拂过你的脖颈，带着淡淡的清香。'},
+            {sp:'苏清瑶', tx:'（轻声）沙大哥……谢谢你。'},
+            {sp:'主角', tx:'（内心）卧槽，心跳好快！这就是心动的感觉吗？'},
+            {sp:'主角', tx:'', choices:[
+                {txt:'表白心意', nxt:'confess', eff:{love:25}},
+                {txt:'装作若无其事', nxt:'hidefeel', eff:{love:0}}
+            ]}
+        ],
+        confess: [
+            {sp:'主角', tx:'清瑶……我喜欢你。从见到你的那一刻起。'},
+            {sp:'苏清瑶', tx:'（愣住）沙大哥……我……'},
+            {sp:'苏清瑶', tx:'（眼眶微红）我也……喜欢你。'},
+            {sp:'旁白', tx:'夕阳西下，两人相拥在流沙河畔……'},
+            {sp:'旁白', tx:'然而，平静并未持续多久。河底突然翻涌，一只巨大的精怪破水而出！', next:4}
+        ],
+        hidefeel: [
+            {sp:'主角', tx:'（假装看风景）这河……真宽啊……'},
+            {sp:'苏清瑶', tx:'（略有失落）嗯……是啊。'},
+            {sp:'旁白', tx:'就在这时，河底突然翻涌，一只巨大的精怪破水而出！', next:4}
+        ],
+        battle: '精怪'
+    },
+    { // 4 第五章
+        title: '第五章·西行启程', scene: 'ending',
+        ds: [
+            {sp:'旁白', tx:'你们合力击败了河底精怪，但苏清瑶也受了重伤。'},
+            {sp:'苏清瑶', tx:'（虚弱）沙大哥……我没事……'},
+            {sp:'主角', tx:'（抱起她）你流了好多血！坚持住！'},
+            {sp:'苏清瑶', tx:'沙大哥……我知道你注定要走一条不平凡的路。'},
+            {sp:'苏清瑶', tx:'我……我不能再陪你了。我想回故乡，找一处清净之地……'},
+            {sp:'主角', tx:'不要……清瑶，不要离开我……'},
+            {sp:'苏清瑶', tx:'（微笑）傻大哥……我们的缘分，也许就到这里了。'},
+            {sp:'苏清瑶', tx:'但我相信，你会找到属于你的道路。'},
+            {sp:'旁白', tx:'苏清瑶轻轻抚摸着你的脸庞，眼中满是不舍。'},
+            {sp:'苏清瑶', tx:'保重……沙悟净。'},
+            {sp:'旁白', tx:'苏清瑶转身离去，消失在夕阳的余晖中。'},
+            {sp:'主角', tx:'（望着她的背影，泪水滑落）……清瑶……'},
+            {sp:'主角', tx:'（握紧降妖宝杖）也许……这就是我的宿命。'},
+            {sp:'旁白', tx:'就在这时，远处传来诵经声。一位身披袈裟的僧人缓缓走来。'},
+            {sp:'唐僧', tx:'阿弥陀佛。施主为何在此独自垂泪？'},
+            {sp:'主角', tx:'（抬头）你是……'},
+            {sp:'唐僧', tx:'贫僧从东土大唐而来，去往西天拜佛求经。'},
+            {sp:'唐僧', tx:'施主相貌不凡，颇具慧根。可愿随贫僧一同西行？'},
+            {sp:'主角', tx:'（沉默良久，望向西方）……好。'},
+            {sp:'主角', tx:'我愿拜入师父门下，护送师父西天取经！'},
+            {sp:'旁白', tx:'黄沙漫天，师徒二人的身影渐渐远去。'},
+            {sp:'旁白', tx:'西行之路，就此开启……'}
+        ]
+    }
+];
+
+// 敌人数据
+const ENEMIES = {
+    '河妖': {n:'流沙河妖', hp:50, atk:8},
+    '山贼': {n:'山贼劫匪', hp:70, atk:12},
+    '妖兽': {n:'荒野妖兽', hp:100, atk:15},
+    '精怪': {n:'河底精怪', hp:150, atk:20, boss:true}
+};
+
+// 技能数据
+const SKILLS = [
+    {n:'流沙御守', mp:6, t:'def'},
+    {n:'禅心护体', mp:8, t:'shield'},
+    {n:'静心疗伤', mp:10, t:'heal'}
+];
+
+let logs = [], curDs = [];
+
+// ============ 启动游戏 ============
+function start() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    G.ph = 'story'; G.ch = 0;
+    loadCh(0);
+    setTimeout(() => document.getElementById('infopanel').style.display = 'block', 2000);
+}
+
+function closeInfo() { document.getElementById('infopanel').style.display = 'none'; }
+
+// ============ 章节加载 ============
+function loadCh(n) {
+    G.ch = n; G.di = 0;
+    const c = CHAPS[n];
+    document.getElementById('title').textContent = c.title;
+    document.getElementById('title').style.animation = 'none';
+    setTimeout(() => document.getElementById('title').style.animation = 'fadeDown 1s ease forwards', 10);
+    
+    const sm = {modern:'s-modern', river:'s-river', forest:'s-forest', cabin:'s-cabin', crossing:'s-crossing', ending:'s-ending'};
+    document.getElementById('scene').className = 'scene ' + (sm[c.scene] || 's-modern');
+    
+    curDs = [...c.ds];
+    showD();
+}
+
+function showD() {
+    if (G.di >= curDs.length) {
+        const c = CHAPS[G.ch];
+        if (c.battle) { startBattle(c.battle); return; }
+        else if (G.ch < 4) { loadCh(G.ch + 1); return; }
+        else { showEnd(); return; }
+    }
+    
+    const d = curDs[G.di];
+    document.getElementById('speaker').textContent = d.sp;
+    document.getElementById('dtext').textContent = d.tx;
+    
+    const c = document.getElementById('choices');
+    c.innerHTML = '';
+    
+    if (d.choices) {
+        G.chs = false;
+        d.choices.forEach(ch => {
+            const b = document.createElement('button');
+            b.className = 'cbtn';
+            b.textContent = ch.txt;
+            b.onclick = () => mkCh(ch);
+            c.appendChild(b);
+        });
+    } else {
+        const b = document.createElement('button');
+        b.className = 'cbtn-cont';
+        b.textContent = '继续';
+        b.onclick = () => nxD(d.next);
+        c.appendChild(b);
+    }
+    
+    if (d.eff) applyEff(d.eff);
+}
+
+function nxD(n) {
+    G.di++;
+    if (n !== undefined) { setTimeout(() => loadCh(n), 400); return; }
+    showD();
+}
+
+function mkCh(ch) {
+    if (G.chs) return;
+    G.chs = true;
+    if (ch.eff) applyEff(ch.eff);
+    
+    const c = CHAPS[G.ch];
+    if (ch.nxt === 'trust' && c.trust) curDs = [...c.trust];
+    else if (ch.nxt === 'hide' && c.hide) curDs = [...c.hide];
+    else if (ch.nxt === 'comfort' && c.comfort) curDs = [...c.comfort];
+    else if (ch.nxt === 'silent' && c.silent) curDs = [...c.silent];
+    else if (ch.nxt === 'confess' && c.confess) curDs = [...c.confess];
+    else if (ch.nxt === 'hidefeel' && c.hidefeel) curDs = [...c.hidefeel];
+    else { nxD(ch.next); return; }
+    G.di = 0;
+    showD();
+}
+
+function applyEff(e) {
+    if (e.love !== undefined) {
+        G.love = Math.max(0, Math.min(100, G.love + e.love));
+        document.getElementById('love').textContent = G.love;
+    }
+    if (e.qyJoin) {
+        G.qyJoin = true;
+        document.getElementById('qycard').style.display = 'flex';
+        document.getElementById('bqcard').style.display = 'flex';
+    }
+}
+
+// ============ 战斗系统 ============
+function startBattle(type) {
+    document.getElementById('dialog').style.display = 'none';
+    document.getElementById('chars').style.display = 'none';
+    document.getElementById('battle').style.display = 'flex';
+    
+    const e = ENEMIES[type] || {n:'敌人', hp:50, atk:10};
+    G.enemy = {...e, hp: e.hp};
+    G.turn = 1;
+    G.hp = G.maxHp; G.mp = G.maxMp;
+    G.qyHp = G.qyMaxHp; G.qyMp = G.qyMaxMp;
+    G.def = false; G.qyDef = false;
+    logs = [];
+    
+    const esp = document.getElementById('esp');
+    esp.innerHTML = e.boss ? `<div class="sp-boss" data-name="${e.n}"></div>` : `<div class="sp-enemy" data-name="${e.n}"></div>`;
+    document.getElementById('ename').textContent = e.n;
+    
+    updBattleUI();
+    updSkGrid();
+    updItGrid();
+    addLog(`${e.n}出现！`, 'spec');
+}
+
+function updBattleUI() {
+    document.getElementById('bturn').textContent = `第 ${G.turn} 回合`;
+    document.getElementById('ehp').style.width = `${(G.enemy.hp / G.enemy.hp) * 100}%`;
+    document.getElementById('bhp').style.width = `${(G.hp / G.maxHp) * 100}%`;
+    if (G.qyJoin) document.getElementById('bqhp').style.width = `${(G.qyHp / G.qyMaxHp) * 100}%`;
+}
+
+function updSkGrid() {
+    const g = document.getElementById('skgrid');
+    g.innerHTML = '';
+    SKILLS.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.className = 'abtn abtn-skl';
+        b.innerHTML = `${s.n}<span class="scost">内力${s.mp}</span>`;
+        b.disabled = G.mp < s.mp;
+        b.onclick = () => useSkill(i);
+        g.appendChild(b);
+    });
+}
+
+function updItGrid() {
+    const g = document.getElementById('itgrid');
+    g.innerHTML = '';
+    
+    const d = document.createElement('button');
+    d.className = 'abtn abtn-itm';
+    d.innerHTML = `疗伤丹药💊<span class="scost">x${G.dan}</span>`;
+    d.disabled = G.dan <= 0;
+    d.onclick = useDan;
+    g.appendChild(d);
+    
+    const n = document.createElement('button');
+    n.className = 'abtn abtn-itm';
+    n.innerHTML = `凝神散🧪<span class="scost">x${G.ning}</span>`;
+    n.disabled = G.ning <= 0;
+    n.onclick = useNing;
+    g.appendChild(n);
+}
+
+function stab(t) {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tabcnt').forEach(x => x.classList.remove('active'));
+    document.querySelector(`.tab:nth-child(${['attack','skill','defend','item'].indexOf(t)+1})`).classList.add('active');
+    document.getElementById(t + '-cnt').classList.add('active');
+}
+
+function addLog(t, ty='') {
+    logs.push({t, ty});
+    const l = document.getElementById('blog');
+    const d = document.createElement('div');
+    d.className = ty;
+    d.textContent = t;
+    l.appendChild(d);
+    l.scrollTop = l.scrollHeight;
+}
+
+function showDmg(n, h, id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const p = document.getElementById('app').getBoundingClientRect();
+    const d = document.createElement('div');
+    d.className = 'dmgnum' + (h ? ' heal' : '');
+    d.textContent = (h ? '+' : '-') + n;
+    d.style.left = (r.left - p.left + r.width/2 - 20) + 'px';
+    d.style.top = (r.top - p.top) + 'px';
+    document.getElementById('app').appendChild(d);
+    setTimeout(() => d.remove(), 1000);
+}
+
+function showEff(t) {
+    const e = document.createElement('div');
+    e.className = 'skilleff';
+    e.textContent = t;
+    document.getElementById('app').appendChild(e);
+    setTimeout(() => e.remove(), 800);
+}
+
+// ============ 战斗动作 ============
+function attack() {
+    const dmg = 18;
+    G.enemy.hp = Math.max(0, G.enemy.hp - dmg);
+    showDmg(dmg, false, 'esp');
+    addLog(`沙悟净棍法普攻，造成 ${dmg} 伤害！`, 'dmg');
+    updBattleUI();
+    chkEnd();
+}
+
+function useSkill(i) {
+    const s = SKILLS[i];
+    if (G.mp < s.mp) return;
+    G.mp -= s.mp;
+    showEff(s.n);
+    addLog(`沙悟净施展「${s.n}」！`, 'spec');
+    
+    if (s.t === 'def') {
+        G.def = true;
+        addLog('防御力大幅提升！', 'spec');
+    } else if (s.t === 'shield') {
+        G.def = true;
+        const h = 15;
+        G.hp = Math.min(G.maxHp, G.hp + h);
+        showDmg(h, true, 'bhp');
+        addLog(`防御并回复 ${h} HP！`, 'heal');
+    } else if (s.t === 'heal') {
+        const h = 35;
+        G.hp = Math.min(G.maxHp, G.hp + h);
+        showDmg(h, true, 'bhp');
+        addLog(`静心疗伤，回复 ${h} HP！`, 'heal');
+    }
+    updBattleUI();
+    updSkGrid();
+    chkEnd();
+}
+
+function defend() {
+    G.def = true;
+    addLog('沙悟净进入防御姿态！', 'spec');
+    enemyTurn();
+}
+
+function useDan() {
+    if (G.dan <= 0) return;
+    G.dan--;
+    document.getElementById('dan').textContent = G.dan;
+    const h = 30;
+    G.hp = Math.min(G.maxHp, G.hp + h);
+    showDmg(h, true, 'bhp');
+    addLog(`使用疗伤丹药，回复 ${h} HP！`, 'heal');
+    updBattleUI();
+    updItGrid();
+    enemyTurn();
+}
+
+function useNing() {
+    if (G.ning <= 0) return;
+    G.ning--;
+    document.getElementById('ning').textContent = G.ning;
+    const m = 15;
+    G.mp = Math.min(G.maxMp, G.mp + m);
+    addLog(`使用凝神散，回复 ${m} 内力！`, 'heal');
+    updBattleUI();
+    updItGrid();
+    enemyTurn();
+}
+
+function chkEnd() {
+    if (G.enemy.hp <= 0) {
+        addLog(`${G.enemy.n}被击败！`, 'spec');
+        setTimeout(() => {
+            document.getElementById('battle').style.display = 'none';
+            document.getElementById('result').style.display = 'flex';
+            document.getElementById('rtext').textContent = '胜利!';
+            document.getElementById('rtext').className = '';
+            G.win = true;
+        }, 500);
+        return;
+    }
+    enemyTurn();
+}
+
+function enemyTurn() {
+    setTimeout(() => {
+        let dmg = G.enemy.atk;
+        if (G.def) dmg = Math.floor(dmg * 0.5);
+        
+        let target = 'bhp', name = '沙悟净', hp = G.hp;
+        if (G.qyJoin && Math.random() > 0.5) {
+            target = 'bqhp'; name = '苏清瑶'; hp = G.qyHp;
+        }
+        
+        hp = Math.max(0, hp - dmg);
+        if (target === 'bhp') G.hp = hp;
+        else G.qyHp = hp;
+        
+        showDmg(dmg, false, target);
+        addLog(`${G.enemy.n}攻击${name}，造成 ${dmg} 伤害！`, 'dmg');
+        
+        if (G.hp <= 0) {
+            addLog('沙悟净倒下……', 'dmg');
+            setTimeout(() => {
+                document.getElementById('battle').style.display = 'none';
+                document.getElementById('result').style.display = 'flex';
+                document.getElementById('rtext').textContent = '失败……';
+                document.getElementById('rtext').className = 'fail';
+                G.win = false;
+            }, 500);
+            return;
+        }
+        
+        G.turn++;
+        G.mp = Math.min(G.maxMp, G.mp + 4);
+        if (G.qyJoin) G.qyMp = Math.min(G.qyMaxMp, G.qyMp + 3);
+        G.def = false;
+        updBattleUI();
+        updSkGrid();
+    }, 800);
+}
+
+function contBattle() {
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('dialog').style.display = 'block';
+    document.getElementById('chars').style.display = 'flex';
+    
+    const c = CHAPS[G.ch];
+    if (c.after) {
+        curDs = [...c.after];
+        G.di = 0;
+        showD();
+    } else {
+        loadCh(G.ch + 1);
+    }
+}
+
+// ============ 结局 ============
+function showEnd() {
+    document.getElementById('dialog').style.display = 'none';
+    document.getElementById('chars').style.display = 'none';
+    document.getElementById('ending').style.display = 'flex';
+    
+    document.getElementById('etitle').textContent = '西行启程';
+    document.getElementById('etext').textContent = 
+        '苏清瑶归隐故里，在江南水乡开了一家医馆，悬壶济世。\n\n' +
+        '你放下儿女情长，正式拜入唐僧门下，成为他的第三个徒弟——沙和尚。\n\n' +
+        '从此，你肩挑担担，一路向西，踏上了漫漫取经路。\n\n' +
+        '前路漫漫，八十一难还在等待着你们。\n\n' +
+        '但你知道，无论遇到什么困难，那份在流沙河畔许下的承诺，将永远铭记于心。\n\n' +
+        '—— 西游沙悟净传 · 完 ——\n\n' +
+        '（续作待续……）';
+}
+
+function replay() { location.reload(); }
+</script>
+</body>
+</html>
